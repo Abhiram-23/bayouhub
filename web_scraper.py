@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 import asyncio
 import csv
+import json
+
 
 api_key = os.getenv("GEMINI_API_KEY")
 
@@ -22,7 +24,7 @@ class Post(BaseModel):
 
 
 class Posts(BaseModel):
-    posts: List[Post]
+    data: List[Post]
 
 controller = Controller(output_model=Posts)
 
@@ -55,24 +57,60 @@ async def scrape_listing(listing_title, listing_address):
     return result.final_result()
 
 async def main():
+    # Define the CSV file name
+    csv_output_file = 'output.csv'
+
+    # Define the header
+    header = ['Listing Title', 'Listing Email', 'Listing URL', 'Listing Address', 'Listing Short Description', 'Listing Long Description']
+
+    # Check if the file exists, if not, write the header
+    file_exists = os.path.isfile(csv_output_file)
     # Read the CSV file
     csv_file = 'nightlife.csv'
     op = []
-    with open(csv_file, 'r', encoding='utf-8') as infile:
-        reader = csv.DictReader(infile)
-        count = 0
-        for row in reader:
-            if count >= 10:
-                break
-            count += 1
+    data = []
+    with open(csv_output_file, 'a', newline='', encoding='utf-8') as outfile:
+        writer = csv.writer(outfile)
+        if not file_exists:
+            writer.writerow(header)
+        with open(csv_file, 'r', encoding='utf-8') as infile:
+            reader = csv.DictReader(infile)
+            count = 0
+            for row in reader:
+                count += 1
 
-            listing_title = row['Listing Title']
-            listing_address = row['Listing Address']
+                listing_title = row['Listing Title']
+                listing_address = row['Listing Address']
 
-            # Scrape listing info
-            result = await scrape_listing(listing_title, listing_address)
-            op.append(result)
-            print(f"Listing Title: {listing_title}, Result: {result}")
+                # Scrape listing info
+                result = await scrape_listing(listing_title, listing_address)
+                print(type(result),"this is result type8888888*******"*5)
+                result = json.loads(result)
+                if isinstance(result, dict):
+                    op_data = result.get('data', [])
+                else:
+                    op_data = []
+                op.append(result)
+                print(f"Listing Title: {listing_title}, Result: {result}")
+                listing_email = 'N/A'
+                listing_url = 'N/A'
+                listing_short_description = 'N/A'
+                listing_long_description = 'N/A'
+                print(op_data,"this is op data==================")
+                if op_data and len(op_data) > 0:
+                    listing_email = op_data[0].get('listing_email', 'N/A')
+                    listing_url = op_data[0].get('listing_url', 'N/A')
+                    listing_short_description = op_data[0].get('listing_short_description', 'N/A')
+                    listing_long_description = op_data[0].get('listing_long_description', 'N/A')
+                data.append([listing_title, listing_email, listing_url, listing_address, listing_short_description, listing_long_description])
+                if count % 1 == 0:
+                    print(data, "data is appended================================="*5)
+                    writer.writerows(data)
+                    data = []
+            if data:
+                writer.writerows(data)
+
         print(op)
+
 if __name__ == "__main__":
     asyncio.run(main())
