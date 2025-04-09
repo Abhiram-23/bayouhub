@@ -28,7 +28,7 @@ class Posts(BaseModel):
 
 controller = Controller(output_model=Posts)
 
-llm = ChatGoogleGenerativeAI(model='gemini-2.0-flash', api_key=SecretStr(os.getenv('GEMINI_API_KEY')))
+llm = ChatGoogleGenerativeAI(model='gemini-2.0-flash-lite', api_key=SecretStr(os.getenv('GEMINI_API_KEY')))
 browser = Browser(
     config=BrowserConfig(
         chrome_instance_path='C:\Program Files\Google\Chrome\Application\chrome.exe',  # macOS path
@@ -107,7 +107,7 @@ async def main(start_line=1):
                 writer.writerows(data)
                 print(writer)
                 data = []
-                if count%10==0:
+                if count%200==0:
                     break
 
         print(op)
