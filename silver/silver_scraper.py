@@ -137,7 +137,7 @@ async def main(start_line=1):
                 print(f"✅ Saved: {listing_title}\n")
 
               #  Optional: Limit scrape for testing
-                if count % 5 == 0:
+                if count % 500 == 0:
                    break
 
         print("🎉 Scraping complete.")
