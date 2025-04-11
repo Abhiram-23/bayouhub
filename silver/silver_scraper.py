@@ -34,7 +34,7 @@ class Posts(BaseModel):
 controller = Controller(output_model=Posts)
 
 llm = ChatGoogleGenerativeAI(
-    model='gemini-2.0-flash-lite',
+    model='gemini-2.0-flash',
     api_key=SecretStr(api_key)
 )
 
